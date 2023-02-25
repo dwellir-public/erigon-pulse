@@ -609,7 +609,7 @@ func (hd *HeaderDownload) InsertHeader(hf FeedHeaderFunc, terminalTotalDifficult
 		link.ClearChildren()
 	}
 	var blocksToTTD uint64
-	if terminalTotalDifficulty != nil && returnTd != nil && lastD != nil {
+	if terminalTotalDifficulty != nil && returnTd != nil && lastD != nil && lastD.Uint64() != 0 {
 		// Calculate the estimation of when TTD will be hit
 		var x big.Int
 		x.Sub(terminalTotalDifficulty, returnTd)

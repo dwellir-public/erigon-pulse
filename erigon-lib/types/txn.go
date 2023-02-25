@@ -47,33 +47,35 @@ type TxParseConfig struct {
 // TxParseContext is object that is required to parse transactions and turn transaction payload into TxSlot objects
 // usage of TxContext helps avoid extra memory allocations
 type TxParseContext struct {
-	Keccak2         hash.Hash
-	Keccak1         hash.Hash
-	validateRlp     func([]byte) error
-	ChainID         uint256.Int // Signature values
-	R               uint256.Int // Signature values
-	S               uint256.Int // Signature values
-	V               uint256.Int // Signature values
-	ChainIDMul      uint256.Int
-	DeriveChainID   uint256.Int // pre-allocated variable to calculate Sub(&ctx.v, &ctx.chainIDMul)
-	cfg             TxParseConfig
-	buf             [65]byte // buffer needs to be enough for hashes (32 bytes) and for public key (65 bytes)
-	Sig             [65]byte
-	Sighash         [32]byte
-	withSender      bool
-	allowPreEip2s   bool // Allow s > secp256k1n/2; see EIP-2
-	chainIDRequired bool
-	IsProtected     bool
+	Keccak2               hash.Hash
+	Keccak1               hash.Hash
+	validateRlp           func([]byte) error
+	ChainID               uint256.Int // Signature values
+	R                     uint256.Int // Signature values
+	S                     uint256.Int // Signature values
+	V                     uint256.Int // Signature values
+	ChainIDMul            uint256.Int
+	DeriveChainID         uint256.Int // pre-allocated variable to calculate Sub(&ctx.v, &ctx.chainIDMul)
+	cfg                   TxParseConfig
+	buf                   [65]byte // buffer needs to be enough for hashes (32 bytes) and for public key (65 bytes)
+	Sig                   [65]byte
+	Sighash               [32]byte
+	withSender            bool
+	allowPreEip2s         bool // Allow s > secp256k1n/2; see EIP-2
+	chainIDRequired       bool
+	IsProtected           bool
+	allowPulseChainLegacy bool // If allowPulseChainLegacy is true, allow prefork transactions from the Ethereum Mainnet chain.
 }
 
-func NewTxParseContext(chainID uint256.Int) *TxParseContext {
+func NewTxParseContext(chainID uint256.Int, allowPulseChainLegacy bool) *TxParseContext {
 	if chainID.IsZero() {
 		panic("wrong chainID")
 	}
 	ctx := &TxParseContext{
-		withSender: true,
-		Keccak1:    sha3.NewLegacyKeccak256(),
-		Keccak2:    sha3.NewLegacyKeccak256(),
+		withSender:            true,
+		Keccak1:               sha3.NewLegacyKeccak256(),
+		Keccak2:               sha3.NewLegacyKeccak256(),
+		allowPulseChainLegacy: allowPulseChainLegacy,
 	}
 
 	// behave as of London enabled
@@ -337,7 +339,13 @@ func (ctx *TxParseContext) parseTransactionBody(payload []byte, pos, p0 int, slo
 			ctx.ChainID.Set(&ctx.cfg.ChainID)
 		}
 		if !ctx.ChainID.Eq(&ctx.cfg.ChainID) {
-			return 0, fmt.Errorf("%w: %s, %d (expected %d)", ErrParseTxn, "invalid chainID", ctx.ChainID.Uint64(), ctx.cfg.ChainID.Uint64())
+			if !ctx.allowPulseChainLegacy {
+				return 0, fmt.Errorf("%w: %s, %d (expected %d)", ErrParseTxn, "invalid chainID", ctx.ChainID.Uint64(), ctx.cfg.ChainID.Uint64())
+			}
+			// If allowPulseChainLegacy, ChainID must be 1 (Ethereum Mainnet).
+			if !ctx.ChainID.Eq(uint256.NewInt(1)) {
+				return 0, fmt.Errorf("%w: %s, %d (expected %d)", ErrParseTxn, "invalid PulseChain chainID", ctx.ChainID.Uint64(), ctx.cfg.ChainID.Uint64())
+			}
 		}
 	}
 	// Next follows the nonce, which we need to parse
@@ -486,7 +494,13 @@ func (ctx *TxParseContext) parseTransactionBody(payload []byte, pos, p0 int, slo
 			ctx.ChainID.Sub(&ctx.V, u256.N35)
 			ctx.ChainID.Rsh(&ctx.ChainID, 1)
 			if !ctx.ChainID.Eq(&ctx.cfg.ChainID) {
-				return 0, fmt.Errorf("%w: %s, %d (expected %d)", ErrParseTxn, "invalid chainID", ctx.ChainID.Uint64(), ctx.cfg.ChainID.Uint64())
+				if !ctx.allowPulseChainLegacy {
+					return 0, fmt.Errorf("%w: %s, %d (expected %d)", ErrParseTxn, "invalid chainID", ctx.ChainID.Uint64(), ctx.cfg.ChainID.Uint64())
+				}
+				// If allowPulseChainLegacy, ChainID must be 1 (Ethereum Mainnet).
+				if !ctx.ChainID.Eq(uint256.NewInt(1)) {
+					return 0, fmt.Errorf("%w: %s, %d (expected %d)", ErrParseTxn, "invalid PulseChain chainID", ctx.ChainID.Uint64(), ctx.cfg.ChainID.Uint64())
+				}
 			}
 
 			chainIDBits = ctx.ChainID.BitLen()

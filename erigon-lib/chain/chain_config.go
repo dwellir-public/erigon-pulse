@@ -68,6 +68,9 @@ type Config struct {
 	CancunTime   *big.Int `json:"cancunTime,omitempty"`
 	PragueTime   *big.Int `json:"pragueTime,omitempty"`
 
+	// PulseChain fork blocks
+	PrimordialPulseBlock *big.Int `json:"primordialPulseBlock,omitempty"` // PrimordialPulseBlock switch block (nil = no fork, 0 = already activated)
+
 	// Optional EIP-4844 parameters
 	MinBlobGasPrice            *uint64 `json:"minBlobGasPrice,omitempty"`
 	MaxBlobGasPerBlock         *uint64 `json:"maxBlobGasPerBlock,omitempty"`
@@ -84,6 +87,8 @@ type Config struct {
 
 	Bor     BorConfig       `json:"-"`
 	BorJSON json.RawMessage `json:"bor,omitempty"`
+
+	PulseChain *PulseChainConfig `json:"pulseChain,omitempty"`
 }
 
 type BorConfig interface {
@@ -97,7 +102,7 @@ type BorConfig interface {
 func (c *Config) String() string {
 	engine := c.getEngine()
 
-	return fmt.Sprintf("{ChainID: %v, Homestead: %v, DAO: %v, Tangerine Whistle: %v, Spurious Dragon: %v, Byzantium: %v, Constantinople: %v, Petersburg: %v, Istanbul: %v, Muir Glacier: %v, Berlin: %v, London: %v, Arrow Glacier: %v, Gray Glacier: %v, Terminal Total Difficulty: %v, Merge Netsplit: %v, Shanghai: %v, Cancun: %v, Prague: %v, Engine: %v}",
+	return fmt.Sprintf("{ChainID: %v, Homestead: %v, DAO: %v, Tangerine Whistle: %v, Spurious Dragon: %v, Byzantium: %v, Constantinople: %v, Petersburg: %v, Istanbul: %v, Muir Glacier: %v, Berlin: %v, London: %v, Arrow Glacier: %v, Gray Glacier: %v, Primordial Pulse: %v, Terminal Total Difficulty: %v, Merge Netsplit: %v, Shanghai: %v, Cancun: %v, Prague: %v, Engine: %v}",
 		c.ChainID,
 		c.HomesteadBlock,
 		c.DAOForkBlock,
@@ -112,6 +117,7 @@ func (c *Config) String() string {
 		c.LondonBlock,
 		c.ArrowGlacierBlock,
 		c.GrayGlacierBlock,
+		c.PrimordialPulseBlock,
 		c.TerminalTotalDifficulty,
 		c.MergeNetsplitBlock,
 		c.ShanghaiTime,
@@ -229,6 +235,17 @@ func (c *Config) IsCancun(time uint64) bool {
 // IsPrague returns whether time is either equal to the Prague fork time or greater.
 func (c *Config) IsPrague(time uint64) bool {
 	return isForked(c.PragueTime, time)
+}
+
+// IsPrimordialPulseBlock returns whether or not the given block is the primordial pulse block.
+func (c *Config) IsPrimordialPulseBlock(number uint64) bool {
+	return c.PrimordialPulseBlock != nil && c.PrimordialPulseBlock.Uint64() == number
+}
+
+// PrimordialPulseAhead Returns true if there is a PrimordialPulse block in the future, indicating this chain
+// should still be evaluated using the ethash consensus engine and with mainnet ChainID.
+func (c *Config) PrimordialPulseAhead(number uint64) bool {
+	return c.PrimordialPulseBlock != nil && c.PrimordialPulseBlock.Uint64() > number
 }
 
 func (c *Config) GetBurntContract(num uint64) *common.Address {
@@ -363,7 +380,8 @@ func (c *Config) checkCompatible(newcfg *Config, head uint64) *ConfigCompatError
 	if incompatible(c.SpuriousDragonBlock, newcfg.SpuriousDragonBlock, head) {
 		return newCompatError("Spurious Dragon fork block", c.SpuriousDragonBlock, newcfg.SpuriousDragonBlock)
 	}
-	if c.IsSpuriousDragon(head) && !numEqual(c.ChainID, newcfg.ChainID) {
+	// allow mismatching ChainID if there is a PrimordialPulse block ahead
+	if c.IsSpuriousDragon(head) && !numEqual(c.ChainID, newcfg.ChainID) && !newcfg.PrimordialPulseAhead(head) {
 		return newCompatError("EIP155 chain ID", c.SpuriousDragonBlock, newcfg.SpuriousDragonBlock)
 	}
 	if incompatible(c.ByzantiumBlock, newcfg.ByzantiumBlock, head) {
@@ -399,6 +417,9 @@ func (c *Config) checkCompatible(newcfg *Config, head uint64) *ConfigCompatError
 	}
 	if incompatible(c.MergeNetsplitBlock, newcfg.MergeNetsplitBlock, head) {
 		return newCompatError("Merge netsplit block", c.MergeNetsplitBlock, newcfg.MergeNetsplitBlock)
+	}
+	if incompatible(c.PrimordialPulseBlock, newcfg.PrimordialPulseBlock, head) {
+		return newCompatError("PrimordialPulse fork block", c.PrimordialPulseBlock, newcfg.PrimordialPulseBlock)
 	}
 
 	return nil
@@ -506,6 +527,12 @@ func (c *Config) Rules(num uint64, time uint64) *Rules {
 	if chainID == nil {
 		chainID = new(big.Int)
 	}
+	isShanghai := c.IsShanghai(time)
+	if c.PrimordialPulseAhead(num) {
+		// If the PrimordialPulse fork is ahead, derive the `isShanghai` rule
+		// from the Ethereum Mainnet Shanghai timestamp.
+		isShanghai = time >= 1681338455
+	}
 
 	return &Rules{
 		ChainID:            new(big.Int).Set(chainID),
@@ -518,7 +545,7 @@ func (c *Config) Rules(num uint64, time uint64) *Rules {
 		IsIstanbul:         c.IsIstanbul(num),
 		IsBerlin:           c.IsBerlin(num),
 		IsLondon:           c.IsLondon(num),
-		IsShanghai:         c.IsShanghai(time) || c.IsAgra(num),
+		IsShanghai:         isShanghai || c.IsAgra(num),
 		IsCancun:           c.IsCancun(time),
 		IsNapoli:           c.IsNapoli(num),
 		IsPrague:           c.IsPrague(time),

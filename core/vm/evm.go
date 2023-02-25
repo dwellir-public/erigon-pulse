@@ -17,6 +17,7 @@
 package vm
 
 import (
+	"math/big"
 	"sync/atomic"
 
 	"github.com/holiman/uint256"
@@ -97,13 +98,24 @@ type EVM struct {
 // NewEVM returns a new EVM. The returned EVM is not thread safe and should
 // only ever be used *once*.
 func NewEVM(blockCtx evmtypes.BlockContext, txCtx evmtypes.TxContext, state evmtypes.IntraBlockState, chainConfig *chain.Config, vmConfig Config) *EVM {
+	flexChainConfig := chainConfig
+
+	if flexChainConfig.PrimordialPulseAhead(blockCtx.BlockNumber) {
+		// create a shallow of chainConfig struct and set to ethereum mainnet
+		chainCfgCpy := *chainConfig
+		chainCfgCpy.ChainID = big.NewInt(1)
+
+		// use the new chainCfgCpy
+		flexChainConfig = &chainCfgCpy
+	}
+
 	evm := &EVM{
 		Context:         blockCtx,
 		TxContext:       txCtx,
 		intraBlockState: state,
 		config:          vmConfig,
-		chainConfig:     chainConfig,
-		chainRules:      chainConfig.Rules(blockCtx.BlockNumber, blockCtx.Time),
+		chainConfig:     flexChainConfig,
+		chainRules:      flexChainConfig.Rules(blockCtx.BlockNumber, blockCtx.Time),
 	}
 
 	evm.interpreter = NewEVMInterpreter(evm, vmConfig)

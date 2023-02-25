@@ -42,17 +42,6 @@ FROM docker.io/library/alpine:3.17
 RUN apk add --no-cache ca-certificates libstdc++ tzdata
 RUN apk add --no-cache curl jq bind-tools
 
-# Setup user and group
-#
-# from the perspective of the container, uid=1000, gid=1000 is a sensible choice
-# (mimicking Ubuntu Server), but if caller creates a .env (example in repo root),
-# these defaults will get overridden when make calls docker-compose
-ARG UID=1000
-ARG GID=1000
-RUN adduser -D -u $UID -g $GID erigon
-USER erigon
-RUN mkdir -p ~/.local/share/erigon
-
 # copy compiled artifacts from builder
 ## first do the mdbx ones - since these wont change as often
 COPY --from=tools-builder /app/build/bin/mdbx_chk /usr/local/bin/mdbx_chk
@@ -98,13 +87,13 @@ ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
 LABEL org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.description="Erigon Ethereum Client" \
-      org.label-schema.name="Erigon" \
+      org.label-schema.description="Erigon Ethereum Client with PulseChain" \
+      org.label-schema.name="Erigon PulseChain" \
       org.label-schema.schema-version="1.0" \
-      org.label-schema.url="https://torquem.ch" \
+      org.label-schema.url="https://gitlab.com/pulsechaincom/erigon-pulse" \
       org.label-schema.vcs-ref=$VCS_REF \
-      org.label-schema.vcs-url="https://github.com/ledgerwatch/erigon.git" \
-      org.label-schema.vendor="Torquem" \
+      org.label-schema.vcs-url="https://gitlab.com/pulsechaincom/erigon-pulse.git" \
+      org.label-schema.vendor="PulseChain" \
       org.label-schema.version=$VERSION
 
 ENTRYPOINT ["erigon"]

@@ -79,6 +79,7 @@ docker: validate_docker_build_args git-submodules
 		--build-arg VERSION=${GIT_TAG} \
 		--build-arg UID=${DOCKER_UID} \
 		--build-arg GID=${DOCKER_GID} \
+		--build-arg DEPLOY_TOKEN=${DEPLOY_TOKEN} \
 		${DOCKER_FLAGS} \
 		.
 

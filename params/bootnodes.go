@@ -146,16 +146,42 @@ var ChiadoBootnodes = []string{
 	"enode://595160631241ea41b187b85716f9f9572a266daa940d74edbe3b83477264ce284d69208e61cf50e91641b1b4f9a03fa8e60eb73d435a84cf4616b1c969bc2512@3.69.35.13:30303",
 }
 
-const dnsPrefix = "enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@"
+// PulsechainBootnodes are the enode URLs of the P2P bootstrap nodes running on
+// the main Pulsechain network.
+var PulsechainBootnodes = []string{
+	// Pulsechain Go Bootnodes
+}
+
+// PulsechainTestnetBootnodes are the enode URLs of the P2P bootstrap nodes running on
+// the Pulsechain testnet network.
+var PulsechainTestnetBootnodes = []string{
+	// Pulsechain Go Bootnodes
+}
 
 // KnownDNSNetwork returns the address of a public DNS-based node list for the given
 // genesis hash and protocol. See https://github.com/ethereum/discv4-dns-lists for more
 // information.
-func KnownDNSNetwork(genesis libcommon.Hash, protocol string) string {
+func KnownDNSNetwork(genesis libcommon.Hash, networkID uint64, protocol string) string {
 	var net string
+	var dnsPrefix = "enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@"
+	var tld = ".ethdisco.net"
+
+	if networkID == NetworkIDByChainName(networkname.PulsechainChainName) || networkID == NetworkIDByChainName(networkname.PulsechainTestnetChainName) {
+		tld = ".pulsedisco.net"
+		dnsPrefix = "enrtree://APFXO36RU3TWV7XFGWI2TYF5IDA3WM2GPTRL3TCZINWHZX4R6TAOK@"
+	}
+
 	switch genesis {
 	case MainnetGenesisHash:
-		net = "mainnet"
+		switch networkID {
+		case NetworkIDByChainName(networkname.PulsechainChainName):
+			net = "PulseChain"
+		case NetworkIDByChainName(networkname.PulsechainTestnetChainName):
+			// TODO(bretep): Change to PulseChainTestnetV3
+			net = "PulseChainTestnet"
+		default:
+			net = "mainnet"
+		}
 	case GoerliGenesisHash:
 		net = "goerli"
 	case SepoliaGenesisHash:
@@ -163,7 +189,7 @@ func KnownDNSNetwork(genesis libcommon.Hash, protocol string) string {
 	default:
 		return ""
 	}
-	return dnsPrefix + protocol + "." + net + ".ethdisco.net"
+	return dnsPrefix + protocol + "." + net + tld
 }
 
 func BootnodeURLsOfChain(chain string) []string {
@@ -186,6 +212,10 @@ func BootnodeURLsOfChain(chain string) []string {
 		return GnosisBootnodes
 	case networkname.ChiadoChainName:
 		return ChiadoBootnodes
+	case networkname.PulsechainChainName:
+		return PulsechainBootnodes
+	case networkname.PulsechainTestnetChainName:
+		return PulsechainTestnetBootnodes
 	default:
 		return []string{}
 	}

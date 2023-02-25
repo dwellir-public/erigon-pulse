@@ -10,19 +10,22 @@ import (
 	snapshothashes "github.com/ledgerwatch/erigon-snapshot"
 	"github.com/ledgerwatch/erigon-snapshot/webseed"
 	"github.com/pelletier/go-toml/v2"
+	pulseSnapshotHashes "gitlab.com/pulsechaincom/erigon-pulse-snapshot"
 	"golang.org/x/exp/slices"
 )
 
 var (
 	Mainnet = fromToml(snapshothashes.Mainnet)
 	// Holesky    = fromToml(snapshothashes.Holesky)
-	Sepolia    = fromToml(snapshothashes.Sepolia)
-	Goerli     = fromToml(snapshothashes.Goerli)
-	Mumbai     = fromToml(snapshothashes.Mumbai)
-	Amoy       = fromToml(snapshothashes.Amoy)
-	BorMainnet = fromToml(snapshothashes.BorMainnet)
-	Gnosis     = fromToml(snapshothashes.Gnosis)
-	Chiado     = fromToml(snapshothashes.Chiado)
+	Sepolia           = fromToml(snapshothashes.Sepolia)
+	Goerli            = fromToml(snapshothashes.Goerli)
+	Mumbai            = fromToml(snapshothashes.Mumbai)
+	Amoy              = fromToml(snapshothashes.Amoy)
+	BorMainnet        = fromToml(snapshothashes.BorMainnet)
+	Gnosis            = fromToml(snapshothashes.Gnosis)
+	Chiado            = fromToml(snapshothashes.Chiado)
+	PulseChainMainnet = fromToml(pulseSnapshotHashes.PulseChainMainnet)
+	PulseChainTestnet = fromToml(snapshothashes.Mainnet)
 )
 
 type PreverifiedItem struct {
@@ -137,13 +140,15 @@ type Cfg struct {
 var knownPreverified = map[string]Preverified{
 	networkname.MainnetChainName: Mainnet,
 	// networkname.HoleskyChainName:    HoleskyChainSnapshotCfg,
-	networkname.SepoliaChainName:    Sepolia,
-	networkname.GoerliChainName:     Goerli,
-	networkname.MumbaiChainName:     Mumbai,
-	networkname.AmoyChainName:       Amoy,
-	networkname.BorMainnetChainName: BorMainnet,
-	networkname.GnosisChainName:     Gnosis,
-	networkname.ChiadoChainName:     Chiado,
+	networkname.SepoliaChainName:           Sepolia,
+	networkname.GoerliChainName:            Goerli,
+	networkname.MumbaiChainName:            Mumbai,
+	networkname.AmoyChainName:              Amoy,
+	networkname.BorMainnetChainName:        BorMainnet,
+	networkname.GnosisChainName:            Gnosis,
+	networkname.ChiadoChainName:            Chiado,
+	networkname.PulsechainChainName:        PulseChainMainnet,
+	networkname.PulsechainTestnetChainName: PulseChainTestnet,
 }
 
 // KnownCfg return list of preverified hashes for given network, but apply whiteList filter if it's not empty

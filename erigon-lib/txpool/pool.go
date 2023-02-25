@@ -654,7 +654,7 @@ func (p *TxPool) getCachedBlobTxnLocked(tx kv.Tx, hash []byte) (*metaTx, error) 
 	if err != nil {
 		return nil, err
 	}
-	parseCtx := types.NewTxParseContext(p.chainID)
+	parseCtx := types.NewTxParseContext(p.chainID, false)
 	parseCtx.WithSender(false)
 	txSlot := &types.TxSlot{}
 	parseCtx.ParseTransaction(txn, 0, txSlot, nil, false, true, nil)
@@ -2048,7 +2048,7 @@ func (p *TxPool) fromDB(ctx context.Context, tx kv.Tx, coreTx kv.Tx) error {
 	}
 
 	txs := types.TxSlots{}
-	parseCtx := types.NewTxParseContext(p.chainID)
+	parseCtx := types.NewTxParseContext(p.chainID, false)
 	parseCtx.WithSender(false)
 
 	i := 0

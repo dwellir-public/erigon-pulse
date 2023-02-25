@@ -82,8 +82,8 @@ func (s *Merge) VerifyHeader(chain consensus.ChainHeaderReader, header *types.He
 	if err != nil {
 		return err
 	}
-	if !reached {
-		// Not verifying seals if the TTD is passed
+	if !reached && (chain.Config().PulseChain == nil || !misc.IsPoSHeader(header)) {
+		// Delegate non-PoS block to eth1 verification
 		return s.eth1Engine.VerifyHeader(chain, header, !chain.Config().TerminalTotalDifficultyPassed)
 	}
 	// Short circuit if the parent is not known

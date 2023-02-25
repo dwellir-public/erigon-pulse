@@ -35,6 +35,7 @@ var (
 	maxPendPeers int
 	healthCheck  bool
 	metrics      bool
+	chainName    string
 )
 
 func init() {
@@ -55,6 +56,7 @@ func init() {
 	rootCmd.Flags().IntVar(&maxPendPeers, utils.MaxPendingPeersFlag.Name, utils.MaxPendingPeersFlag.Value, utils.MaxPendingPeersFlag.Usage)
 	rootCmd.Flags().BoolVar(&healthCheck, utils.HealthCheckFlag.Name, false, utils.HealthCheckFlag.Usage)
 	rootCmd.Flags().BoolVar(&metrics, utils.MetricsEnabledFlag.Name, false, utils.MetricsEnabledFlag.Usage)
+	rootCmd.Flags().StringVar(&chainName, utils.ChainFlag.Name, utils.ChainFlag.Value, utils.ChainFlag.Usage)
 
 	if err := rootCmd.MarkFlagDirname(utils.DataDirFlag.Name); err != nil {
 		panic(err)
@@ -88,6 +90,7 @@ var rootCmd = &cobra.Command{
 			protocol,
 			allowedPorts,
 			metrics,
+			chainName,
 		)
 		if err != nil {
 			return err

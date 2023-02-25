@@ -42,6 +42,12 @@ func MakeSigner(config *chain.Config, blockNumber uint64, blockTime uint64) *Sig
 		if overflow {
 			panic(fmt.Errorf("chainID higher than 2^256-1"))
 		}
+
+		if config.PrimordialPulseAhead(blockNumber) {
+			// ethereum mainnet chainID is 1
+			// required to validate transactions on mainnet
+			chainId.SetOne()
+		}
 	}
 	signer.unprotected = true
 	switch {

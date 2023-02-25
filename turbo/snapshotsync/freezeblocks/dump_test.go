@@ -101,7 +101,7 @@ func TestDump(t *testing.T) {
 		t.Run("txs", func(t *testing.T) {
 			require := require.New(t)
 			slot := types2.TxSlot{}
-			parseCtx := types2.NewTxParseContext(*chainID)
+			parseCtx := types2.NewTxParseContext(*chainID, false)
 			parseCtx.WithSender(false)
 			var sender [20]byte
 
@@ -126,7 +126,7 @@ func TestDump(t *testing.T) {
 		t.Run("txs_not_from_zero", func(t *testing.T) {
 			require := require.New(t)
 			slot := types2.TxSlot{}
-			parseCtx := types2.NewTxParseContext(*chainID)
+			parseCtx := types2.NewTxParseContext(*chainID, false)
 			parseCtx.WithSender(false)
 			var sender [20]byte
 

@@ -25,6 +25,7 @@ import (
 	"math/big"
 
 	"github.com/ledgerwatch/erigon-lib/chain"
+	"github.com/ledgerwatch/erigon-lib/chain/networkname"
 	"github.com/ledgerwatch/erigon-lib/common"
 	"github.com/ledgerwatch/erigon-lib/common/hexutility"
 
@@ -165,12 +166,23 @@ func (e *GenesisMismatchError) Error() string {
 	}
 	return fmt.Sprintf("database contains incompatible genesis (try with --chain=%s)", config.ChainName)
 }
-func (g *Genesis) ConfigOrDefault(genesisHash common.Hash) *chain.Config {
+func (g *Genesis) ConfigOrDefault(genesisHash common.Hash, chainId uint64) *chain.Config {
 	if g != nil {
 		return g.Config
 	}
 
-	config := params.ChainConfigByGenesisHash(genesisHash)
+	var config *chain.Config
+	pulseChainConfig := params.ChainConfigByChainName(networkname.PulsechainChainName)
+	pulseChainTestnetConfig := params.ChainConfigByChainName(networkname.PulsechainTestnetChainName)
+	switch chainId {
+	case pulseChainConfig.ChainID.Uint64():
+		config = pulseChainConfig
+	case pulseChainTestnetConfig.ChainID.Uint64():
+		config = pulseChainTestnetConfig
+	default:
+		config = params.ChainConfigByGenesisHash(genesisHash)
+	}
+
 	if config != nil {
 		return config
 	} else {

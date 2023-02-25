@@ -39,6 +39,7 @@ import (
 	"github.com/ledgerwatch/erigon/core/state"
 	"github.com/ledgerwatch/erigon/core/types"
 	"github.com/ledgerwatch/erigon/params"
+	"github.com/ledgerwatch/erigon/pulse"
 	"github.com/ledgerwatch/erigon/rlp"
 )
 
@@ -294,6 +295,8 @@ func (ethash *Ethash) CalcDifficulty(chain consensus.ChainHeaderReader, time, pa
 func CalcDifficulty(config *chain.Config, time, parentTime uint64, parentDifficulty *big.Int, parentNumber uint64, parentUncleHash libcommon.Hash) *big.Int {
 	next := parentNumber + 1
 	switch {
+	case config.IsPrimordialPulseBlock(next):
+		return chain.PulseChainTTDOffset
 	case config.IsGrayGlacier(next):
 		return calcDifficultyEip5133(time, parentTime, parentDifficulty, parentNumber, parentUncleHash)
 	case config.IsArrowGlacier(next):
@@ -562,6 +565,11 @@ func (ethash *Ethash) Finalize(config *chain.Config, header *types.Header, state
 	txs types.Transactions, uncles []*types.Header, r types.Receipts, withdrawals []*types.Withdrawal,
 	chain consensus.ChainReader, syscall consensus.SystemCall, logger log.Logger,
 ) (types.Transactions, types.Receipts, error) {
+	// Apply fork changes on PrimordialPulse block
+	if cfg := chain.Config(); cfg.IsPrimordialPulseBlock(header.Number.Uint64()) {
+		pulse.PrimordialPulseFork(state, cfg.PulseChain)
+	}
+
 	// Accumulate any block and uncle rewards and commit the final state root
 	accumulateRewards(config, state, header, uncles)
 	return txs, r, nil

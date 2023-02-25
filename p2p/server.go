@@ -173,6 +173,9 @@ type Config struct {
 	// whenever a message is sent to or received from a peer
 	EnableMsgEvents bool
 
+	// ChainName is the name of the chain config
+	ChainName string `toml:",omitempty"`
+
 	// it is actually used but a linter got confused
 	clock mclock.Clock //nolint:structcheck
 

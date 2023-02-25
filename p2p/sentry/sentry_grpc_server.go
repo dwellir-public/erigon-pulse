@@ -262,7 +262,10 @@ func makeP2PServer(
 	protocols []p2p.Protocol,
 ) (*p2p.Server, error) {
 	var urls []string
-	chainConfig := params.ChainConfigByGenesisHash(genesisHash)
+	chainConfig := params.ChainConfigByChainName(p2pConfig.ChainName)
+	if chainConfig == nil {
+		chainConfig = params.ChainConfigByGenesisHash(genesisHash)
+	}
 	if chainConfig != nil {
 		urls = params.BootnodeURLsOfChain(chainConfig.ChainName)
 	}
@@ -990,7 +993,7 @@ func (ss *GrpcServer) SetStatus(ctx context.Context, statusData *proto_sentry.St
 		var err error
 		if !ss.p2p.NoDiscovery {
 			if len(ss.discoveryDNS) == 0 {
-				if url := params.KnownDNSNetwork(genesisHash, "all"); url != "" {
+				if url := params.KnownDNSNetwork(genesisHash, statusData.NetworkId, "all"); url != "" {
 					ss.discoveryDNS = []string{url}
 				}
 			}

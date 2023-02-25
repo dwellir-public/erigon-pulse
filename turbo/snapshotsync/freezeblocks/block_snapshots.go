@@ -1796,6 +1796,7 @@ func DumpTxs(ctx context.Context, db kv.RoDB, blockFrom, blockTo uint64, chainCo
 	defer cancel()
 
 	chainID, _ := uint256.FromBig(chainConfig.ChainID)
+	isPulseChain := chainConfig.PulseChain != nil
 
 	numBuf := make([]byte, 8)
 
@@ -1904,7 +1905,7 @@ func DumpTxs(ctx context.Context, db kv.RoDB, blockFrom, blockTo uint64, chainCo
 			valueBuf := bufPool.Get().([]byte)
 			defer bufPool.Put(valueBuf) //nolint
 			valueBufs[i] = valueBuf
-			parseCtxs[i] = types2.NewTxParseContext(*chainID)
+			parseCtxs[i] = types2.NewTxParseContext(*chainID, isPulseChain)
 		}
 
 		if err := addSystemTx(parseCtxs[0], tx, body.BaseTxId); err != nil {
@@ -2205,8 +2206,8 @@ func TransactionsIdx(ctx context.Context, chainConfig *chain.Config, version uin
 	txnHash2BlockNumIdx.LogLvl(log.LvlDebug)
 
 	chainId, _ := uint256.FromBig(chainConfig.ChainID)
-
-	parseCtx := types2.NewTxParseContext(*chainId)
+	isPulseChain := chainConfig.PulseChain != nil
+	parseCtx := types2.NewTxParseContext(*chainId, isPulseChain)
 	parseCtx.WithSender(false)
 	slot := types2.TxSlot{}
 	bodyBuf, word := make([]byte, 0, 4096), make([]byte, 0, 4096)

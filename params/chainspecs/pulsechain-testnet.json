@@ -1,6 +1,7 @@
 {
   "ChainName": "pulsechain-testnet",
   "chainId": 942,
+  "consensus": "ethash",
   "homesteadBlock": 1150000,
   "daoForkBlock": 1920000,
   "daoForkSupport": true,
@@ -19,10 +20,10 @@
   "terminalTotalDifficulty": 58750003716598352947541,
   "terminalTotalDifficultyPassed": true,
   "ethash": {},
-  "primordialPulseBlock": 15669697,
+  "primordialPulseBlock": 16492700,
   "pulseChain": {
     "treasury": {
-      "addr": "0xceB59257450820132aB274ED61C49E5FD96E8868",
+      "addr": "0xA592ED65885bcbCeb30442F4902a0D1Cf3AcB8fC",
       "balance": "0xc9f2c9cd04674edea40000000"
     }
   }

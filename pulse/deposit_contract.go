@@ -53,26 +53,24 @@ var (
 )
 
 // Destroys & disables the Ethereum deposit contract and deploys the PulseChain deposit contract.
-func replaceDepositContract(state *state.IntraBlockState) {
+func replaceDepositContract(statedb *state.IntraBlockState) {
 	// Destroy the old contract
-	state.Selfdestruct(ethereumDepositContractAddr)
-	state.SetCode(ethereumDepositContractAddr, nilContractBytes)
+	statedb.Selfdestruct(ethereumDepositContractAddr)
+	statedb.SetCode(ethereumDepositContractAddr, nilContractBytes)
 	log.Info("ETH2 deposit contract destroyed 💀")
 
-	// Reset balance if any
-	state.SetBalance(pulseDepositContractAddr, uint256.NewInt(0))
-
-	// Initialise zero hash array in the new deposit contract
+	// Initialize the new contract
+	statedb.SetBalance(pulseDepositContractAddr, uint256.NewInt(0))
+	statedb.SetCode(pulseDepositContractAddr, depositContractBytes)
+	statedb.SetNonce(pulseDepositContractAddr, 0)
 	for i := 0; i < len(depositContractStorage); i++ {
 		hash := libcommon.HexToHash(depositContractStorage[i][0])
 		value, err := uint256.FromHex(depositContractStorage[i][1])
 		if err != nil {
 			panic(err)
 		}
-		state.SetState(pulseDepositContractAddr, &hash, *value)
+		statedb.SetState(pulseDepositContractAddr, &hash, *value)
 	}
-
-	// Deploy the new contract code
-	state.SetCode(pulseDepositContractAddr, depositContractBytes)
+	statedb.SetIncarnation(pulseDepositContractAddr, state.FirstContractIncarnation)
 	log.Info("Deployed new beacon deposit contract ✨", "address", pulseDepositContractAddr)
 }

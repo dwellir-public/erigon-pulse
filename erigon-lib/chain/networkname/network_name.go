@@ -14,6 +14,7 @@ const (
 	BorE2ETestChain2ValName    = "bor-e2e-test-2Val"
 	ChiadoChainName            = "chiado"
 	PulsechainChainName        = "pulsechain"
+	PulsechainDevnetChainName  = "pulsechain-devnet"
 	PulsechainTestnetChainName = "pulsechain-testnet"
 )
 
@@ -29,5 +30,6 @@ var All = []string{
 	GnosisChainName,
 	ChiadoChainName,
 	PulsechainChainName,
+	PulsechainDevnetChainName,
 	PulsechainTestnetChainName,
 }

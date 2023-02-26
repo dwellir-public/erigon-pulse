@@ -73,6 +73,7 @@ var (
 	GnosisGenesisHash           = libcommon.HexToHash("0x4f1dd23188aab3a76b463e4af801b52b1248ef073c648cbdc4c9333d3da79756")
 	ChiadoGenesisHash           = libcommon.HexToHash("0xada44fd8d2ecab8b08f256af07ad3e777f17fb434f8f8e678b312f576212ba9a")
 	PulsechainGenesisHash       = libcommon.HexToHash("0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3")
+	PulsechainDevnetGenesisHash = libcommon.HexToHash("0xdbc883fdd1357c5340e4bb624a3dd9af4788602a23af0a42080b31a382c9fba8")
 	PulsechainTetnetGenesisHash = libcommon.HexToHash("0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3")
 )
 
@@ -151,6 +152,8 @@ var (
 	ChiadoChainConfig = readChainSpec("chainspecs/chiado.json")
 
 	PulsechainChainConfig = readChainSpec("chainspecs/pulsechain.json")
+
+	PulsechainDevnetChainConfig = readChainSpec("chainspecs/pulsechain-devnet.json")
 
 	PulsechainTestnetChainConfig = readChainSpec("chainspecs/pulsechain-testnet.json")
 
@@ -242,6 +245,8 @@ func ChainConfigByChainName(chain string) *chain.Config {
 		return ChiadoChainConfig
 	case networkname.PulsechainChainName:
 		return PulsechainChainConfig
+	case networkname.PulsechainDevnetChainName:
+		return PulsechainDevnetChainConfig
 	case networkname.PulsechainTestnetChainName:
 		return PulsechainTestnetChainConfig
 	default:
@@ -273,6 +278,8 @@ func GenesisHashByChainName(chain string) *libcommon.Hash {
 		return &ChiadoGenesisHash
 	case networkname.PulsechainChainName:
 		return &PulsechainGenesisHash
+	case networkname.PulsechainDevnetChainName:
+		return &PulsechainDevnetGenesisHash
 	case networkname.PulsechainTestnetChainName:
 		return &PulsechainTetnetGenesisHash
 	default:

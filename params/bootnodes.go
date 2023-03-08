@@ -155,7 +155,9 @@ var PulsechainBootnodes = []string{
 // PulsechainTestnetBootnodes are the enode URLs of the P2P bootstrap nodes running on
 // the Pulsechain testnet network.
 var PulsechainTestnetBootnodes = []string{
-	// Pulsechain Go Bootnodes
+	"enode://5942169e5173992b2bab93e36bb2773e82b0fe91f2e70239a48232e85da6023673e2fab608f5b7fad4b8dcd2a29c4f2a6f800522aa00262a1b371fb80c7ec620@3.236.202.85:30303",   // bootnode-aws-us-east-1-001
+	"enode://fa1420f97362e6c3e86dfcd38c3877748860b51c021de2662e46daf007d6de22c7668a838c9bf3468496fd10c2374544d16911dd2e2554aef7981e2858349952@44.202.85.131:30303",  // bootnode-aws-us-east-1-002
+	"enode://eee9a1665c202b7fec55be2a5c1106b283f5694a426d727215d3cb0287074d3c72bc7943282b2492b0d39246daad28032d09a2adbeddd43a3e7d4da0e40fd840@174.129.96.223:30303", // bootnode-aws-us-east-1-003
 }
 
 // KnownDNSNetwork returns the address of a public DNS-based node list for the given
@@ -174,11 +176,8 @@ func KnownDNSNetwork(genesis libcommon.Hash, networkID uint64, protocol string) 
 	switch genesis {
 	case MainnetGenesisHash:
 		switch networkID {
-		case NetworkIDByChainName(networkname.PulsechainChainName):
-			net = "PulseChain"
 		case NetworkIDByChainName(networkname.PulsechainTestnetChainName):
-			// TODO(bretep): Change to PulseChainTestnetV3
-			net = "PulseChainTestnet"
+			net = "testnet-v3"
 		default:
 			net = "mainnet"
 		}

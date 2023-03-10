@@ -25,7 +25,7 @@ var (
 	Gnosis            = fromToml(snapshothashes.Gnosis)
 	Chiado            = fromToml(snapshothashes.Chiado)
 	PulseChainMainnet = fromToml(pulseSnapshotHashes.PulseChainMainnet)
-	PulseChainTestnet = fromToml(snapshothashes.Mainnet)
+	PulseChainTestnet = fromToml(pulseSnapshotHashes.PulseChainTestnet)
 )
 
 type PreverifiedItem struct {

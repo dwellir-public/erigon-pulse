@@ -1,5 +1,5 @@
 {
-  "ChainName": "pulsechain-testnet",
+  "ChainName": "pulsechain-testnet-v3",
   "chainId": 942,
   "consensus": "ethash",
   "homesteadBlock": 1150000,

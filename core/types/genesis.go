@@ -173,12 +173,12 @@ func (g *Genesis) ConfigOrDefault(genesisHash common.Hash, chainId uint64) *chai
 
 	var config *chain.Config
 	pulseChainConfig := params.ChainConfigByChainName(networkname.PulsechainChainName)
-	pulseChainTestnetConfig := params.ChainConfigByChainName(networkname.PulsechainTestnetChainName)
+	pulseChainTestnetV3Config := params.ChainConfigByChainName(networkname.PulsechainTestnetV3ChainName)
 	switch chainId {
 	case pulseChainConfig.ChainID.Uint64():
 		config = pulseChainConfig
-	case pulseChainTestnetConfig.ChainID.Uint64():
-		config = pulseChainTestnetConfig
+	case pulseChainTestnetV3Config.ChainID.Uint64():
+		config = pulseChainTestnetV3Config
 	default:
 		config = params.ChainConfigByGenesisHash(genesisHash)
 	}

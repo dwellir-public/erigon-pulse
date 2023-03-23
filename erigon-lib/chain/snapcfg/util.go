@@ -17,15 +17,15 @@ import (
 var (
 	Mainnet = fromToml(snapshothashes.Mainnet)
 	// Holesky    = fromToml(snapshothashes.Holesky)
-	Sepolia           = fromToml(snapshothashes.Sepolia)
-	Goerli            = fromToml(snapshothashes.Goerli)
-	Mumbai            = fromToml(snapshothashes.Mumbai)
-	Amoy              = fromToml(snapshothashes.Amoy)
-	BorMainnet        = fromToml(snapshothashes.BorMainnet)
-	Gnosis            = fromToml(snapshothashes.Gnosis)
-	Chiado            = fromToml(snapshothashes.Chiado)
-	PulseChainMainnet = fromToml(pulseSnapshotHashes.PulseChainMainnet)
-	PulseChainTestnet = fromToml(pulseSnapshotHashes.PulseChainTestnet)
+	Sepolia             = fromToml(snapshothashes.Sepolia)
+	Goerli              = fromToml(snapshothashes.Goerli)
+	Mumbai              = fromToml(snapshothashes.Mumbai)
+	Amoy                = fromToml(snapshothashes.Amoy)
+	BorMainnet          = fromToml(snapshothashes.BorMainnet)
+	Gnosis              = fromToml(snapshothashes.Gnosis)
+	Chiado              = fromToml(snapshothashes.Chiado)
+	PulseChainMainnet   = fromToml(pulseSnapshotHashes.PulseChainMainnet)
+	PulseChainTestnetV3 = fromToml(pulseSnapshotHashes.PulseChainTestnetV3)
 )
 
 type PreverifiedItem struct {
@@ -140,15 +140,15 @@ type Cfg struct {
 var knownPreverified = map[string]Preverified{
 	networkname.MainnetChainName: Mainnet,
 	// networkname.HoleskyChainName:    HoleskyChainSnapshotCfg,
-	networkname.SepoliaChainName:           Sepolia,
-	networkname.GoerliChainName:            Goerli,
-	networkname.MumbaiChainName:            Mumbai,
-	networkname.AmoyChainName:              Amoy,
-	networkname.BorMainnetChainName:        BorMainnet,
-	networkname.GnosisChainName:            Gnosis,
-	networkname.ChiadoChainName:            Chiado,
-	networkname.PulsechainChainName:        PulseChainMainnet,
-	networkname.PulsechainTestnetChainName: PulseChainTestnet,
+	networkname.SepoliaChainName:             Sepolia,
+	networkname.GoerliChainName:              Goerli,
+	networkname.MumbaiChainName:              Mumbai,
+	networkname.AmoyChainName:                Amoy,
+	networkname.BorMainnetChainName:          BorMainnet,
+	networkname.GnosisChainName:              Gnosis,
+	networkname.ChiadoChainName:              Chiado,
+	networkname.PulsechainChainName:          PulseChainMainnet,
+	networkname.PulsechainTestnetV3ChainName: PulseChainTestnetV3,
 }
 
 // KnownCfg return list of preverified hashes for given network, but apply whiteList filter if it's not empty

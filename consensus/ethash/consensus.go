@@ -566,8 +566,8 @@ func (ethash *Ethash) Finalize(config *chain.Config, header *types.Header, state
 	chain consensus.ChainReader, syscall consensus.SystemCall, logger log.Logger,
 ) (types.Transactions, types.Receipts, error) {
 	// Apply fork changes on PrimordialPulse block
-	if cfg := chain.Config(); cfg.IsPrimordialPulseBlock(header.Number.Uint64()) {
-		pulse.PrimordialPulseFork(state, cfg.PulseChain)
+	if config.IsPrimordialPulseBlock(header.Number.Uint64()) {
+		pulse.PrimordialPulseFork(state, config.PulseChain)
 	}
 
 	// Accumulate any block and uncle rewards and commit the final state root

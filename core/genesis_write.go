@@ -479,9 +479,9 @@ func PulsechainGenesisBlock() *types.Genesis {
 	}
 }
 
-func PulsechainTestnetV3GenesisBlock() *types.Genesis {
+func PulsechainTestnetV4GenesisBlock() *types.Genesis {
 	return &types.Genesis{
-		Config:     params.PulsechainTestnetV3ChainConfig,
+		Config:     params.PulsechainTestnetV4ChainConfig,
 		Nonce:      66,
 		ExtraData:  hexutil.MustDecode("0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa"),
 		GasLimit:   5000,
@@ -720,8 +720,8 @@ func GenesisBlockByChainName(chain string) *types.Genesis {
 		return ChiadoGenesisBlock()
 	case networkname.PulsechainChainName:
 		return PulsechainGenesisBlock()
-	case networkname.PulsechainTestnetV3ChainName:
-		return PulsechainTestnetV3GenesisBlock()
+	case networkname.PulsechainTestnetV4ChainName:
+		return PulsechainTestnetV4GenesisBlock()
 	case networkname.PulsechainDevnetChainName:
 		return PulsechainDevnetGenesisBlock()
 	default:

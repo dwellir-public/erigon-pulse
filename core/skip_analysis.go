@@ -39,7 +39,7 @@ var analysisBlocks = map[string][]uint64{
 	networkname.MainnetChainName:             {5_800_596, 6_426_298, 6_426_432, 11_079_912, 13_119_520, 15_081_051},
 	networkname.BorMainnetChainName:          {29_447_463},
 	networkname.PulsechainChainName:          {5_800_596, 6_426_298, 6_426_432, 11_079_912, 13_119_520, 15_081_051},
-	networkname.PulsechainTestnetV3ChainName: {5_800_596, 6_426_298, 6_426_432, 11_079_912, 13_119_520, 15_081_051},
+	networkname.PulsechainTestnetV4ChainName: {5_800_596, 6_426_298, 6_426_432, 11_079_912, 13_119_520, 15_081_051},
 }
 
 func SkipAnalysis(config *chain.Config, blockNumber uint64) bool {

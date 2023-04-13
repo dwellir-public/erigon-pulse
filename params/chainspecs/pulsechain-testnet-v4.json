@@ -1,6 +1,6 @@
 {
-  "ChainName": "pulsechain-testnet-v3",
-  "chainId": 942,
+  "ChainName": "pulsechain-testnet-v4",
+  "chainId": 943,
   "consensus": "ethash",
   "homesteadBlock": 1150000,
   "daoForkBlock": 1920000,
@@ -24,7 +24,7 @@
   "pulseChain": {
     "treasury": {
       "addr": "0xA592ED65885bcbCeb30442F4902a0D1Cf3AcB8fC",
-      "balance": "0xc9f2c9cd04674edea40000000"
+      "balance": "0x314DC6448D9338C15B0A00000000"
     }
   }
 }

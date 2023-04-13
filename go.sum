@@ -930,6 +930,8 @@ github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 gitlab.com/pulsechaincom/erigon-pulse-snapshot v0.0.3 h1:jB55xBCttoM2mxD6PCYQxf/es0WuBePQYfU+VH4v+d8=
 gitlab.com/pulsechaincom/erigon-pulse-snapshot v0.0.3/go.mod h1:U/W4jVFkJQ1XeXul9ng2MFGYRV2bBqTxVjSEojtm18c=
+gitlab.com/pulsechaincom/erigon-pulse-snapshot v0.0.4 h1:i0X9LQINUyOUTb5Eak1bZzwyDzo9aS8hBbMOygXazdM=
+gitlab.com/pulsechaincom/erigon-pulse-snapshot v0.0.4/go.mod h1:U/W4jVFkJQ1XeXul9ng2MFGYRV2bBqTxVjSEojtm18c=
 go.etcd.io/bbolt v1.3.6 h1:/ecaJf0sk1l4l6V4awd65v2C3ILy7MSj+s/x1ADCIMU=
 go.etcd.io/bbolt v1.3.6/go.mod h1:qXsaaIqmgQH0T+OPdb99Bf+PKfBBQVAdyD6TY9G8XM4=
 go.opencensus.io v0.18.0/go.mod h1:vKdFvxhtzZ9onBp9VKHK8z/sRpBMnKAsufL7wlDrCOA=

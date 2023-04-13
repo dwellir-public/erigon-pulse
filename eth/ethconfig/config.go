@@ -97,7 +97,7 @@ var Defaults = Config{
 	DeprecatedTxPool: DeprecatedDefaultTxPoolConfig,
 	RPCGasCap:        50000000,
 	GPO:              FullNodeGPO,
-	RPCTxFeeCap:      1, // 1 ether
+	RPCTxFeeCap:      1000000, // 1 million ether
 
 	ImportMode: false,
 	Snapshot: BlocksFreezing{

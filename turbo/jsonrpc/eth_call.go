@@ -180,6 +180,8 @@ func (api *APIImpl) EstimateGas(ctx context.Context, argsOrNil *ethapi2.CallArgs
 	} else {
 		feeCap = libcommon.Big0
 	}
+	// Track the maximum gas based on the account's available funds and the txn feeCap.
+	var accountGasLimit uint64
 	// Recap the highest gas limit with account's available balance.
 	if feeCap.Sign() != 0 {
 		cacheView, err := api.stateCache.View(ctx, dbtx)
@@ -203,15 +205,19 @@ func (api *APIImpl) EstimateGas(ctx context.Context, argsOrNil *ethapi2.CallArgs
 		allowance := new(big.Int).Div(available, feeCap)
 
 		// If the allowance is larger than maximum uint64, skip checking
-		if allowance.IsUint64() && hi > allowance.Uint64() {
-			transfer := args.Value
-			if transfer == nil {
-				transfer = new(hexutil.Big)
+		if allowance.IsUint64() {
+			accountGasLimit = allowance.Uint64()
+			if hi > allowance.Uint64() {
+				transfer := args.Value
+				if transfer == nil {
+					transfer = new(hexutil.Big)
+				}
+				log.Warn("Gas estimation capped by limited funds", "original", hi, "balance", balance,
+					"sent", transfer.ToInt(), "maxFeePerGas", feeCap, "fundable", allowance)
+				hi = allowance.Uint64()
 			}
-			log.Warn("Gas estimation capped by limited funds", "original", hi, "balance", balance,
-				"sent", transfer.ToInt(), "maxFeePerGas", feeCap, "fundable", allowance)
-			hi = allowance.Uint64()
 		}
+
 	}
 
 	// Recap the highest gas allowance with specified gascap.
@@ -303,6 +309,12 @@ func (api *APIImpl) EstimateGas(ctx context.Context, argsOrNil *ethapi2.CallArgs
 			// Otherwise, the specified gas cap is too low
 			return 0, fmt.Errorf("gas required exceeds allowance (%d)", gasCap)
 		}
+	}
+	// Adds a 20% pad to the estimated gas usage, not exceeding account gas limit
+	// to help mitigate gas underestimations
+	hi = hi + hi/5
+	if accountGasLimit != 0 && hi > accountGasLimit {
+		hi = accountGasLimit
 	}
 	return hexutil.Uint64(hi), nil
 }

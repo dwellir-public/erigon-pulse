@@ -13,6 +13,7 @@ import (
 	types2 "github.com/ledgerwatch/erigon-lib/gointerfaces/types"
 
 	"github.com/ledgerwatch/erigon/core"
+	"github.com/ledgerwatch/erigon/core/rawdb"
 	"github.com/ledgerwatch/erigon/core/types"
 	"github.com/ledgerwatch/erigon/rpc"
 	"github.com/ledgerwatch/erigon/turbo/builder"
@@ -20,11 +21,12 @@ import (
 	"github.com/ledgerwatch/erigon/turbo/execution/eth1/eth1_utils"
 )
 
-func (e *EthereumExecutionModule) checkWithdrawalsPresence(time uint64, withdrawals []*types.Withdrawal) error {
-	if !e.config.IsShanghai(time) && withdrawals != nil {
+func (e *EthereumExecutionModule) checkWithdrawalsPresence(num uint64, time uint64, withdrawals []*types.Withdrawal) error {
+	shanghai := e.config.IsShanghai(num, time)
+	if !shanghai && withdrawals != nil {
 		return &rpc.InvalidParamsError{Message: "withdrawals before shanghai"}
 	}
-	if e.config.IsShanghai(time) && withdrawals == nil {
+	if shanghai && withdrawals == nil {
 		return &rpc.InvalidParamsError{Message: "missing withdrawals list"}
 	}
 	return nil
@@ -56,7 +58,16 @@ func (e *EthereumExecutionModule) AssembleBlock(ctx context.Context, req *execut
 		Withdrawals:           eth1_utils.ConvertWithdrawalsFromRpc(req.Withdrawals),
 	}
 
-	if err := e.checkWithdrawalsPresence(param.Timestamp, param.Withdrawals); err != nil {
+	tx, err := e.db.BeginRo(ctx)
+	if err != nil {
+		return nil, err
+	}
+	parentNum := rawdb.ReadHeaderNumber(tx, param.ParentHash)
+	tx.Rollback()
+	if parentNum == nil {
+		return nil, fmt.Errorf("unknown parent: %x", param.ParentHash)
+	}
+	if err := e.checkWithdrawalsPresence(*parentNum+1, param.Timestamp, param.Withdrawals); err != nil {
 		return nil, err
 	}
 

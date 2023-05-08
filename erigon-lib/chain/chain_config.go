@@ -210,7 +210,12 @@ func (c *Config) IsGrayGlacier(num uint64) bool {
 }
 
 // IsShanghai returns whether time is either equal to the Shanghai fork time or greater.
-func (c *Config) IsShanghai(time uint64) bool {
+func (c *Config) IsShanghai(num uint64, time uint64) bool {
+	if c.PrimordialPulseAhead(num) {
+		// If the PrimordialPulse fork is ahead,
+		// compare with the Ethereum Mainnet Shanghai time.
+		return 1681338455 <= time
+	}
 	return isForked(c.ShanghaiTime, time)
 }
 
@@ -238,14 +243,14 @@ func (c *Config) IsPrague(time uint64) bool {
 }
 
 // IsPrimordialPulseBlock returns whether or not the given block is the primordial pulse block.
-func (c *Config) IsPrimordialPulseBlock(number uint64) bool {
-	return c.PrimordialPulseBlock != nil && c.PrimordialPulseBlock.Uint64() == number
+func (c *Config) IsPrimordialPulseBlock(num uint64) bool {
+	return c.PrimordialPulseBlock != nil && c.PrimordialPulseBlock.Uint64() == num
 }
 
 // PrimordialPulseAhead Returns true if there is a PrimordialPulse block in the future, indicating this chain
 // should still be evaluated using the ethash consensus engine and with mainnet ChainID.
-func (c *Config) PrimordialPulseAhead(number uint64) bool {
-	return c.PrimordialPulseBlock != nil && c.PrimordialPulseBlock.Uint64() > number
+func (c *Config) PrimordialPulseAhead(num uint64) bool {
+	return c.PrimordialPulseBlock != nil && c.PrimordialPulseBlock.Uint64() > num
 }
 
 func (c *Config) GetBurntContract(num uint64) *common.Address {
@@ -527,12 +532,6 @@ func (c *Config) Rules(num uint64, time uint64) *Rules {
 	if chainID == nil {
 		chainID = new(big.Int)
 	}
-	isShanghai := c.IsShanghai(time)
-	if c.PrimordialPulseAhead(num) {
-		// If the PrimordialPulse fork is ahead, derive the `isShanghai` rule
-		// from the Ethereum Mainnet Shanghai timestamp.
-		isShanghai = time >= 1681338455
-	}
 
 	return &Rules{
 		ChainID:            new(big.Int).Set(chainID),
@@ -545,7 +544,7 @@ func (c *Config) Rules(num uint64, time uint64) *Rules {
 		IsIstanbul:         c.IsIstanbul(num),
 		IsBerlin:           c.IsBerlin(num),
 		IsLondon:           c.IsLondon(num),
-		IsShanghai:         isShanghai || c.IsAgra(num),
+		IsShanghai:         c.IsShanghai(num, time) || c.IsAgra(num),
 		IsCancun:           c.IsCancun(time),
 		IsNapoli:           c.IsNapoli(num),
 		IsPrague:           c.IsPrague(time),

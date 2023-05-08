@@ -567,7 +567,7 @@ func GenesisToBlock(g *types.Genesis, tmpDir string, logger log.Logger) (*types.
 	}
 
 	var withdrawals []*types.Withdrawal
-	if g.Config != nil && g.Config.IsShanghai(g.Timestamp) {
+	if g.Config != nil && g.Config.IsShanghai(g.Number, g.Timestamp) {
 		withdrawals = []*types.Withdrawal{}
 	}
 

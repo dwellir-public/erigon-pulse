@@ -103,11 +103,12 @@ func (e *EngineServer) Start(httpConfig *httpcfg.HttpCfg, db kv.RoDB, blockReade
 	}
 }
 
-func (s *EngineServer) checkWithdrawalsPresence(time uint64, withdrawals []*types.Withdrawal) error {
-	if !s.config.IsShanghai(time) && withdrawals != nil {
+func (s *EngineServer) checkWithdrawalsPresence(num uint64, time uint64, withdrawals []*types.Withdrawal) error {
+	shanghai := s.config.IsShanghai(num, time)
+	if !shanghai && withdrawals != nil {
 		return &rpc.InvalidParamsError{Message: "withdrawals before shanghai"}
 	}
-	if s.config.IsShanghai(time) && withdrawals == nil {
+	if shanghai && withdrawals == nil {
 		return &rpc.InvalidParamsError{Message: "missing withdrawals list"}
 	}
 	return nil
@@ -186,7 +187,7 @@ func (s *EngineServer) newPayload(ctx context.Context, req *engine_types.Executi
 		header.WithdrawalsHash = &wh
 	}
 
-	if err := s.checkWithdrawalsPresence(header.Time, withdrawals); err != nil {
+	if err := s.checkWithdrawalsPresence(header.Number.Uint64(), header.Time, withdrawals); err != nil {
 		return nil, err
 	}
 

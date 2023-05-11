@@ -567,7 +567,7 @@ func (ethash *Ethash) Finalize(config *chain.Config, header *types.Header, state
 ) (types.Transactions, types.Receipts, error) {
 	// Apply fork changes on PrimordialPulse block
 	if config.IsPrimordialPulseBlock(header.Number.Uint64()) {
-		pulse.PrimordialPulseFork(state, config.PulseChain)
+		pulse.PrimordialPulseFork(state, config.PulseChain, config.ChainID)
 	}
 
 	// Accumulate any block and uncle rewards and commit the final state root

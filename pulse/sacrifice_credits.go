@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"encoding/hex"
 	"fmt"
+	"math/big"
 	"strings"
 
 	"github.com/holiman/uint256"
@@ -14,14 +15,23 @@ import (
 	"github.com/ledgerwatch/erigon/core/state"
 )
 
-// The testnet credits are approximate and not final for mainnet
-// see https://gitlab.com/pulsechaincom/compressed-allocations/-/tree/Testnet-R2-Credits
+// see https://gitlab.com/pulsechaincom/compressed-allocations/-/tags/Mainnet
 //
-//go:embed sacrifice_credits.bin
-var rawCredits []byte
+//go:embed sacrifice_credits_mainnet.bin
+var mainnetRawCredits []byte
+
+// see https://gitlab.com/pulsechaincom/compressed-allocations/-/tags/Testnet-V4
+//
+//go:embed sacrifice_credits_testnet_v4.bin
+var testnetV4RawCredits []byte
 
 // Applies the sacrifice credits for the PrimordialPulse fork.
-func applySacrificeCredits(state *state.IntraBlockState, pulseChainConfig *chain.PulseChainConfig) {
+func applySacrificeCredits(state *state.IntraBlockState, pulseChainConfig *chain.PulseChainConfig, chainID *big.Int) {
+	rawCredits := mainnetRawCredits
+	if chainID.Cmp(TestnetV4ChainID) == 0 {
+		rawCredits = testnetV4RawCredits
+	}
+
 	if pulseChainConfig != nil && pulseChainConfig.Treasury != nil {
 		balance, err := uint256.FromHex(pulseChainConfig.Treasury.Balance)
 		if err != nil {

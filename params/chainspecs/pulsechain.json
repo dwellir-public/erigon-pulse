@@ -19,6 +19,7 @@
   "terminalTotalDifficulty": 58750003716598352947541,
   "terminalTotalDifficultyPassed": true,
   "ethash": {},
-  "primordialPulseBlock": 15669697,
-  "pulseChain": {}
+  "primordialPulseBlock": 17233000,
+  "pulseChain": {},
+  "shanghaiTime": 1683786515
 }

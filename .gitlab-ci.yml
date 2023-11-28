@@ -1,0 +1,106 @@
+stages:
+  - build
+  - release
+
+variables:
+  DOCKER_IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+  DOCKER_PLATFORMS: linux/amd64,linux/arm64
+
+compile binaries:
+  stage: build
+  image: golang:latest
+  variables:
+    CGO_CFLAGS:
+      -DMDBX_FORCE_ASSERTIONS=0
+      -O
+      -D__BLST_PORTABLE__
+      -Wno-unknown-warning-option
+      -Wno-enum-int-mismatch
+      -Wno-strict-prototypes
+    GO_FLAGS: -trimpath -tags nosqlite,noboltdb
+  rules:
+    # manual only for non-tagged commits, auto for tags
+    - if: $CI_COMMIT_TAG == null
+      when: manual
+    - if: $CI_COMMIT_TAG != null
+  before_script:
+    # writing COMPILE_JOB_ID var to environment file, passed as artifact to downstream jobs
+    # see: https://docs.gitlab.com/ee/ci/variables/#pass-an-environment-variable-to-another-job
+    - echo COMPILE_JOB_ID=$CI_JOB_ID >> build.env
+  script:
+    - GOOS=linux GARCH=amd64 go build $GO_FLAGS -o _build/linux/erigon-amd64 ./cmd/erigon
+    - GOOS=linux GARCH=arm64 go build $GO_FLAGS -o _build/linux/erigon-arm64 ./cmd/erigon
+  artifacts:
+    paths:
+      - _build/
+    reports:
+      # pass the generated env to downstream jobs
+      dotenv: build.env
+
+docker build:
+  stage: build
+  image: docker:cli
+  rules:
+    # manual only for non-tagged commits, auto for tags
+    - if: $CI_COMMIT_TAG == null
+      when: manual
+    - if: $CI_COMMIT_TAG != null
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker context create ctx
+    - docker buildx create --use ctx
+    - docker buildx build
+      --tag "$DOCKER_IMAGE_NAME"
+      --platform "$DOCKER_PLATFORMS"
+      --provenance=false
+      --build-arg "BUILD_DATE=$CI_JOB_STARTED_AT"
+      --build-arg "VCS_REF=$CI_COMMIT_SHA"
+      --build-arg "VERSION=$CI_COMMIT_REF_NAME"
+      --pull --push .
+    - docker manifest inspect "$DOCKER_IMAGE_NAME"
+
+release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script:
+    - echo "Releasing with artifacts from job $CI_PROJECT_URL/-/jobs/$COMPILE_JOB_ID"
+  rules:
+    - if: $CI_COMMIT_TAG != null
+      when: manual
+  variables:
+    ARTIFACT_URL: "$CI_PROJECT_URL/-/jobs/$COMPILE_JOB_ID/artifacts/raw"
+  release:
+    name: "$CI_COMMIT_TAG"
+    description: |
+      **Docker Image**
+      - erigon multi-arch (amd64/arm64): \`$DOCKER_IMAGE_NAME\`
+
+      ## Release Notes
+      _Release created by pipeline (pending release notes)._
+    tag_name: "$CI_COMMIT_TAG"
+    assets:
+      links:
+        - name: "Linux Intel/AMD64 Executable"
+          link_type: package
+          url: "$ARTIFACT_URL/_build/linux/erigon-amd64"
+        - name: "Linux ARM64 Executable"
+          link_type: package
+          url: "$ARTIFACT_URL/_build/linux/erigon-arm64"
+
+docker tag latest:
+  stage: release
+  image: docker:cli
+  rules:
+    - if: $CI_COMMIT_TAG != null
+  # run automatically, but only if a release has been created
+  needs:
+    - release
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker buildx imagetools create -t "$CI_REGISTRY_IMAGE:latest" "$DOCKER_IMAGE_NAME"

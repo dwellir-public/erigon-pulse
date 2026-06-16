@@ -124,6 +124,30 @@ func TestSendRawTransaction(t *testing.T) {
 	//require.Equal(eth.ToProto[m.MultiClient.Protocol()][eth.NewPooledTransactionHashesMsg], sent.Id)
 }
 
+func TestSendRawTransactionUsesConfiguredTxFeeCap(t *testing.T) {
+	mockSentry, require := mock.MockWithTxPool(t), require.New(t)
+	logger := log.New()
+
+	oneBlockStep(mockSentry, require, t)
+
+	txFeeCap := float64(2_000_000)
+	gasLimit := uint64(1_210_000)
+	txn := pricedTransaction(0, gasLimit, uint256.NewInt(params.Ether), mockSentry.Key)
+
+	ctx, conn := rpcdaemontest.CreateTestGrpcConn(t, mockSentry)
+	txPool := txpool.NewTxpoolClient(conn)
+	api := jsonrpc.NewEthAPI(newBaseApiForTest(mockSentry), mockSentry.DB, nil, txPool, nil, 5000000, 100_000, false, 100_000, logger)
+	api.TxFeeCap = txFeeCap
+
+	buf := bytes.NewBuffer(nil)
+	err := txn.MarshalBinary(buf)
+	require.NoError(err)
+
+	_, err = api.SendRawTransaction(ctx, buf.Bytes())
+	require.Error(err)
+	require.NotContains(err.Error(), "configured cap (1000000.00 ether)")
+}
+
 func TestSendRawTransactionUnprotected(t *testing.T) {
 	mockSentry, require := mock.MockWithTxPool(t), require.New(t)
 	logger := log.New()
